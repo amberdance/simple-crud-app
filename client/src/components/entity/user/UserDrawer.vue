@@ -35,7 +35,8 @@
     </div>
 
     <v-divider></v-divider>
-    <div class="my-4">
+
+    <v-card dense flat :loading="isLoading" class="my-4 py-4">
       <el-form
         :model="formData"
         :inline-message="true"
@@ -142,7 +143,7 @@
           </v-col>
         </v-row>
       </el-form>
-    </div>
+    </v-card>
   </div>
 </template>
 
@@ -164,6 +165,7 @@ export default {
   data() {
     return {
       isDrawerCreate: false,
+      isLoading: false,
       formData: {},
       image: "",
 
@@ -283,19 +285,30 @@ export default {
         return;
       }
 
-      this.isDrawerCreate
-        ? await this.createUser(this.formData)
-        : await this.updateUser({
-            id: this.user.id,
-            params: deepDiffObject(this.user, this.formData),
-          });
+      try {
+        this.isLoading = true;
 
-      this.$emit("onDrawerClose");
-      this.$onSuccess();
+        this.isDrawerCreate
+          ? await this.createUser(this.formData)
+          : await this.updateUser({
+              id: this.user.id,
+              params: deepDiffObject(this.user, this.formData),
+            });
+
+        this.$emit("onDrawerClose");
+        this.$onSuccess();
+      } catch (e) {
+        this.$onError();
+        console.error(e);
+      } finally {
+        this.isLoading = false;
+      }
     },
 
     async uploadImage() {
       try {
+        this.isLoading = true;
+
         const formData = new FormData();
         formData.append("id", this.user.id);
         formData.append("image", this.formData.image);
@@ -306,6 +319,8 @@ export default {
       } catch (e) {
         console.error(e);
         this.$onError();
+      } finally {
+        this.isLoading = false;
       }
     },
 
@@ -313,12 +328,16 @@ export default {
       if (this.isDrawerCreate) return this.purgeImage();
 
       try {
+        this.isLoading = true;
+
         await this.detachAvatar(this.user.id);
         this.purgeImage();
         this.$onSuccess();
       } catch (e) {
         console.error(e);
         this.$onError();
+      } finally {
+        this.isLoading = false;
       }
     },
 

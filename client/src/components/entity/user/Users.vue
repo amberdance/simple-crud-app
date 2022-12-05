@@ -135,8 +135,16 @@ export default {
     };
   },
 
-  created() {
-    this.findAllUsers();
+  async created() {
+    try {
+      this.isLoading = true;
+      await this.findAllUsers();
+    } catch (e) {
+      this.$onError("Не удалось загрузить список сотрудников");
+      console.error(e);
+    } finally {
+      this.isLoading = false;
+    }
   },
 
   computed: {
@@ -189,13 +197,19 @@ export default {
         });
 
       try {
+        this.isLoading = true;
+
         ids.length == 1
           ? await this.deleteUser(ids[0])
           : await this.deleteUsers(ids);
 
         this.$onSuccess();
+      } catch (e) {
+        this.$onError();
+        console.error(e);
       } finally {
         this.selectedRows = [];
+        this.isLoading = false;
       }
     },
   },

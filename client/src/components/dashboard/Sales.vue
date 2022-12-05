@@ -12,7 +12,7 @@
         :value="values"
         :smooth="1"
         :padding="4"
-        :line-width="10"
+        :line-width="1"
         :label-size="4"
       >
         <template v-slot:label="item">{{ item.value }} руб.</template>
